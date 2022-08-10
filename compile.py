@@ -12,7 +12,7 @@
 # It is advisable to run the script in a screen session.
 
 from operator import truediv
-import subprocesss
+import subprocess
 import os
 import shutil
 import re
@@ -52,7 +52,7 @@ def compile(version, opts):
     os.chdir(os.path.expanduser('~/polkadot_optimized'))
     bin_dir = 'bin/' + version
     if not os.path.isdir(bin_dir):
-        os.mkdir(bin_dir)
+        os.makedirs(bin_dir)
 
     # Check if opts was not compiled before
     list_of_files = glob.glob(bin_dir + '/polkadot_*.json')
@@ -73,7 +73,7 @@ def compile(version, opts):
         shutil.rmtree('polkadot')
 
     # Clone git and run init
-    work_dir = os.path.expanduser('~/optimized_polkadot')
+    work_dir = os.path.expanduser('~/polkadot_optimized')
     run("git clone --depth 1 --branch v{} https://github.com/paritytech/polkadot.git".format(version), work_dir, log_file)
 
     work_dir = os.path.expanduser('~/polkadot_optimized/polkadot')

@@ -139,7 +139,7 @@ def product_dict(**kwargs):
 
 if __name__ == "__main__":
     # Change version and options here
-    version = '0.9.27'
+    version = '0.9.26'
     
     all_opts_1 = {'toolchain': ['stable', 'nightly'],
                 'arch':      [None, 'skylake', 'alderlake'],

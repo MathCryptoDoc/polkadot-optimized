@@ -3,13 +3,14 @@
 # Copyright 2022 https://www.math-crypto.com
 # GNU General Public License
 
-# Script to compile a specific version of polkadot with many different 
+# Script to compile a specific release of polkadot with many different 
 # sets of optimization options (specified in the code down below).
 #
-# The binaries are placed in ~/polkadot_optimized/bin/VERSION
+# The binaries are placed in 
+#     ~/polkadot_optimized/bin/VERSION
 # (change this in the code below if needed).
 # Beware that compiling takes a while (about 30 min per set of options).
-# It is advisable to run the script in a screen session.
+# It is recommended to run the script in, for example, a screen session.
 
 from operator import truediv
 import subprocess
@@ -19,7 +20,6 @@ import re
 import glob
 import json
 import logging
-
 import datetime
 import dateutil.relativedelta
 import itertools
@@ -141,6 +141,7 @@ if __name__ == "__main__":
     # Change version and options here
     version = '0.9.26'
     
+    # # Options used in detailed analysis for i5-12700
     all_opts_1 = {'toolchain': ['stable', 'nightly'],
                 'arch':      [None, 'skylake', 'alderlake'],
                 'codegen':   [False, True],
@@ -156,8 +157,18 @@ if __name__ == "__main__":
                 }
     # Take all combinations in all_opts_x    
     opts = list(product_dict(**all_opts_1)) + list(product_dict(**all_opts_2))
-    print(opts)                            
+    print(opts)      
 
+    # # Options for a quick test - choose this first to see if the whole pipeline works                      
+    # all_opts = {'toolchain': ['stable', 'nightly'],
+    #             'arch':      [None],
+    #             'codegen':   [False],
+    #             'lto_ldd':   [False],
+    #             'profile':   ['release']
+    #             }
+    # opts = list(product_dict(**all_opts))
+    # print(opts)      
+            
 
     # Remark: LTO_LDD is not LTO. Also LTO cannot be given as an option via RUSTFLAGS
     # These options give the following errors:

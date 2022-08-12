@@ -19,7 +19,7 @@
 
 import subprocess
 import sys
-import os
+import os, stat
 import socket
 from datetime import datetime
 import psutil # pip install psutil
@@ -27,6 +27,8 @@ import glob
 import re
 import shutil
 from pathlib import Path
+import requests
+
 
 def perform_benchmark(binary, NB_RUNS, nb_build, processed_dir, docker=False):
     for i in range(NB_RUNS):        
@@ -36,7 +38,7 @@ def perform_benchmark(binary, NB_RUNS, nb_build, processed_dir, docker=False):
         if not docker:
             bench = subprocess.run([binary, "benchmark", "machine", "--disk-duration", "30"], 
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)                    
-        else:
+        else:            
             #shlex.split("docker run --rm -it parity/polkadot:v0.9.26 benchmark machine --disk-duration 30")
             bench = subprocess.run(['docker', 'run', '--rm', '-it', 'parity/polkadot:v{}'.format(version), 
                                     'benchmark', 'machine', '--disk-duration', '30'], 
@@ -61,7 +63,7 @@ def run(version, NB_RUNS = 5):
     if not os.path.isdir(processed_dir):
         os.makedirs(processed_dir)
 
-    # # Run all numbered binaries polkadot_NB.bin
+    # Run all numbered binaries polkadot_NB.bin
     for binary in list_of_files:
         nb = int(re.findall("_\d+.bin",binary)[0][1:-4])        
         perform_benchmark(binary, NB_RUNS, nb, processed_dir)
@@ -70,18 +72,31 @@ def run(version, NB_RUNS = 5):
         new_json = processed_dir + '/bench_{}.json'.format(nb)
         shutil.copy2(orig_json, new_json)
 
-    # Run official binary
+    # Run official binary    
     binary = bin_dir + '/official_polkadot.bin'
+    if not os.path.exists(binary):
+        print("Dowloading polkadot binary since official_polkadot.bin not found.")
+        url = "https://github.com/paritytech/polkadot/releases/download/v{}/polkadot".format(version) 
+        resp = requests.get(url)
+        with open(binary, "wb") as f: # opening a file handler to create new file 
+            f.write(resp.content)
+    if not os.access(binary, os.X_OK):
+        print("Setting executable permission for official_polkadot.bin.")
+        os.chmod(binary, stat.S_IXUSR)
     perform_benchmark(binary, NB_RUNS, "official", processed_dir)
 
-    # Dockerele    
+    # Run in Docker    
     perform_benchmark(None, NB_RUNS, "docker", processed_dir, docker=True)
+        
+
     
 
 if __name__=="__main__":
     # Change version here
-    version = "0.9.26"
+    version = "0.9.26"    
     NB_RUNS = 20
+    # For testing:
+    NB_RUNS = 2
     run(version, NB_RUNS)
     
     

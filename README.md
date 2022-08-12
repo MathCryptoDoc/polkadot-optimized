@@ -1,12 +1,12 @@
 # polkadot-optimized: optimized binaries for polkadot
-A set of scripts to compile, benchmark and analyze different optimization options when compiling polkadot yourself.
+A set of Python scripts to build, benchmark, and analyze different optimization options when compiling [polkadot](https://github.com/paritytech/polkadot) yourself.
 
 ## Getting started
 
 ### Install Python libraries
-Required: python3, pandas, dateutil, request, psutil, pyarrow. This works on Ubuntu 22.04:
+Required: python3, pip, pandas, dateutil, request, psutil, pyarrow. This works on Ubuntu 22.04:
 ```
-sudo apt install python3-dateutil python3-requests python3-pandas
+sudo apt install python3-pip python3-dateutil python3-requests python3-pandas
 pip3 install psutil pyarrow
 ```
 
@@ -56,10 +56,15 @@ python3 run_benchmarks.py
 python3 parse_benchmarks.py
 ```
 
+### Analyze
+**TODOO** add explanation
+
 
 ## Support us
 
-See https://www.math-crypto.com/
+For tips and nominations: Kusama account [EARQCUK4Y3oN3LCuyjriBxPesNAuQWa7ifjsfNSU6srpFAq](https://polkachu.com/kusama/validators/EARQCUK4Y3oN3LCuyjriBxPesNAuQWa7ifjsfNSU6srpFAq) (MathCrypto/01 - π% commission)
+
+See also https://www.math-crypto.com/staking for more information.
 
 
 

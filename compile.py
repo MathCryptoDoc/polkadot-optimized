@@ -7,7 +7,7 @@
 # sets of optimization options (specified in the code down below).
 #
 # The binaries are placed in 
-#     ~/polkadot_optimized/bin/VERSION
+#     ~/polkadot-optimized/bin/VERSION
 # (change this in the code below if needed).
 # Beware that compiling takes a while (about 30 min per set of options).
 # It is recommended to run the script in, for example, a screen session.
@@ -49,7 +49,7 @@ def compile(version, opts):
     print(version)  
 
     # Prepare build directory
-    os.chdir(os.path.expanduser('~/polkadot_optimized'))
+    os.chdir(os.path.expanduser('~/polkadot-optimized'))
     bin_dir = 'bin/' + version
     if not os.path.isdir(bin_dir):
         os.makedirs(bin_dir)
@@ -67,16 +67,16 @@ def compile(version, opts):
     nb = extract_largest_number(list_of_files) + 1
 
     new_filename_root = bin_dir + '/polkadot_{}'.format(nb)
-    log_file = os.path.expanduser('~/polkadot_optimized/' + new_filename_root + ".log")
+    log_file = os.path.expanduser('~/polkadot-optimized/' + new_filename_root + ".log")
 
     if os.path.isdir('polkadot'):
         shutil.rmtree('polkadot')
 
     # Clone git and run init
-    work_dir = os.path.expanduser('~/polkadot_optimized')
+    work_dir = os.path.expanduser('~/polkadot-optimized')
     run("git clone --depth 1 --branch v{} https://github.com/paritytech/polkadot.git".format(version), work_dir, log_file)
 
-    work_dir = os.path.expanduser('~/polkadot_optimized/polkadot')
+    work_dir = os.path.expanduser('~/polkadot-optimized/polkadot')
     run("./scripts/init.sh", work_dir, log_file)
 
     # Set build options
@@ -114,7 +114,7 @@ def compile(version, opts):
     dt2 = datetime.datetime.now()
 
     ## Copy new polkadot file
-    os.chdir(os.path.expanduser('~/polkadot_optimized'))
+    os.chdir(os.path.expanduser('~/polkadot-optimized'))
 
     orig_filename = 'polkadot/target/x86_64-unknown-linux-gnu/{}/polkadot'.format(opts['profile'])
     shutil.copy2(orig_filename, new_filename_root + ".bin")

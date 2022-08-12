@@ -5,14 +5,14 @@
 
 # Script to parse the benchmark files that were generated
 # by run_benchmarks.py. It will read all the files in
-#   ~/polkadot_optimized/output/VERSION/HOSTNAME/DATE_TIME/
+#   ~/polkadot-optimized/output/VERSION/HOSTNAME/DATE_TIME/
 # For each combination of VERSION, HOSTNAME, DATE_TIME a 
 # pandas dataframe is constructed and stored in
-#   ~/polkadot_optimized/processed/todo/
+#   ~/polkadot-optimized/processed/todo/
 # as a feather object and 
-#   ~/polkadot_optimized/processed/csv/
+#   ~/polkadot-optimized/processed/csv/
 # as a csv file. Processed files are then moved to 
-#   ~/polkadot_optimized/processed/old/
+#   ~/polkadot-optimized/processed/old/
 
 
 import re

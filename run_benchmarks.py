@@ -6,9 +6,9 @@
 # Script to benchmark many different polkadot binaries that were 
 # compiled using compile.py. Version needs to be specified in
 # the code below. Binaries are expected to placed in
-#     ~/polkadot_optimized/bin/VERSION
+#     ~/polkadot-optimized/bin/VERSION
 # The output of the benchmarks are placed in 
-#     ~/polkadot_optimized/output/VERSION/HOSTNAME/DATE_TIME
+#     ~/polkadot-optimized/output/VERSION/HOSTNAME/DATE_TIME
 # Both directories are hard-codes so change this in the code 
 # below if needed.
 #
@@ -52,7 +52,7 @@ def perform_benchmark(binary, NB_RUNS, nb_build, processed_dir, docker=False):
             text_file.write("CPU utilization at end: {}\n".format(pct_after))
 
 def run(version, NB_RUNS = 5):
-    os.chdir(os.path.expanduser('~/polkadot_optimized'))
+    os.chdir(os.path.expanduser('~/polkadot-optimized'))
     bin_dir = 'bin/' + version
     list_of_files = glob.glob(bin_dir + '/polkadot_*.bin')
 

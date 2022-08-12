@@ -1,4 +1,4 @@
-# polkadot-optimized --- Optimized binaries for polkadot
+# polkadot-optimized: optimized binaries for polkadot
 A set of scripts to compile, benchmark and analyze different optimization options when compiling polkadot yourself.
 
 ## Getting started

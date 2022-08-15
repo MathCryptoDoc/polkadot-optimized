@@ -51,7 +51,7 @@ cd polkadot-optimized
 ```
 
 ### Start compilation and benchmarking
-Modify bottom of ``compile.py`` for desired release version and optimization options. You can also choose a smaller set of options to test or only select the *winning options for your native architecture**.
+Modify bottom of ``compile.py`` for desired release version and optimization options. By default, it will take the *winning options for your native architecture* but you also choose a smaller set of options to test or the exhaustive set in our testing.
 ```
 screen # can be resumed with screen -r after logout
 python3 compile.py
@@ -60,7 +60,11 @@ python3 parse_benchmarks.py
 ```
 
 ### Analyze
-**TODO** add explanation
+The Python notebook ``analyze-0-9-26.ipynb`` explains the step we did for our analysis. You can easily let it analyze your benchmark data if you load your ``feather`` file.
+
+To run the notebook, you need jupyter-labs, matplot-lib, numpy. You can also just take a look https://github.com/MathCryptoDoc/polkadot-optimized/blob/main/analyze-0-9-26.ipynb
+
+
 
 
 

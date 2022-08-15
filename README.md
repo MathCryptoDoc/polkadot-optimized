@@ -51,8 +51,9 @@ cd polkadot-optimized
 ```
 
 ### Start compilation and benchmarking
-Modify bottom of ``compile.py`` for desired release version and optimization options. You can also choose a smaller set of options to test.
+Modify bottom of ``compile.py`` for desired release version and optimization options. You can also choose a smaller set of options to test or only select the *winning options for your native architecture**.
 ```
+screen # can be resumed with screen -r after logout
 python3 compile.py
 python3 run_benchmarks.py
 python3 parse_benchmarks.py
@@ -60,6 +61,7 @@ python3 parse_benchmarks.py
 
 ### Analyze
 **TODO** add explanation
+
 
 
 ## Support us

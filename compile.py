@@ -4,7 +4,8 @@
 # GNU General Public License
 
 # Script to compile a specific release of polkadot with many different 
-# sets of optimization options (specified in the code down below).
+# sets of optimization options (specified in the code down below, look
+# for the ##########).
 #
 # The binaries are placed in 
 #     ~/polkadot-optimized/bin/VERSION
@@ -138,28 +139,32 @@ def product_dict(**kwargs):
 
 
 if __name__ == "__main__":
-    # Change version and options here
+    #############
+    # Select version and build options below
+    
     version = '0.9.26'
     
-    # # Options used in detailed analysis for i5-12700
-    all_opts_1 = {'toolchain': ['stable', 'nightly'],
-                'arch':      [None, 'skylake', 'alderlake'],
-                'codegen':   [False, True],
-                'lto_ldd':   [False, True],
-                'profile':   ['release']
-                }
+    ############# Detailed analysis for i7-12700
+    # # This will take a long time, up to a day!
+    # all_opts_1 = {'toolchain': ['stable', 'nightly'],
+    #             'arch':      [None, 'skylake', 'alderlake'],
+    #             'codegen':   [False, True],s
+    #             'lto_ldd':   [False, True],
+    #             'profile':   ['release']
+    #             }
 
-    all_opts_2 = {'toolchain': ['stable', 'nightly'],
-                'arch':      [None, 'skylake', 'alderlake'],
-                'codegen':   [False, True],
-                'lto_ldd':   [False],
-                'profile':   ['production']
-                }
-    # Take all combinations in all_opts_x    
-    opts = list(product_dict(**all_opts_1)) + list(product_dict(**all_opts_2))
-    print(opts)      
+    # all_opts_2 = {'toolchain': ['stable', 'nightly'],
+    #             'arch':      [None, 'skylake', 'alderlake'],
+    #             'codegen':   [False, True],
+    #             'lto_ldd':   [False],
+    #             'profile':   ['production']
+    #             }
+    # # Take all combinations in all_opts_x    
+    # opts = list(product_dict(**all_opts_1)) + list(product_dict(**all_opts_2))
+    # print(opts)      
 
-    # # Options for a quick test - choose this first to see if the whole pipeline works                      
+    ############# Quick test
+    # # Choose this first to see if the whole pipeline works                      
     # all_opts = {'toolchain': ['stable', 'nightly'],
     #             'arch':      [None],
     #             'codegen':   [False],
@@ -168,6 +173,26 @@ if __name__ == "__main__":
     #             }
     # opts = list(product_dict(**all_opts))
     # print(opts)      
+
+    ############# Winning options for native architecture
+    # This will take a few hours.
+    # These correspond to builds 20, 21, 32, 33 from webpage:
+    all_opts_1 = {'toolchain': ['stable', 'nightly'],
+                'arch':      ['native'],
+                'codegen':   [True],
+                'lto_ldd':   [False, True],
+                'profile':   ['release']
+                }
+    # These correspond to builds 39, 45 from webpage:
+    all_opts_2 = {'toolchain': ['stable', 'nightly'],
+                'arch':      ['native'],
+                'codegen':   [True],
+                'lto_ldd':   [False],
+                'profile':   ['production']
+                }
+    # Take all combinations in all_opts_x    
+    opts = list(product_dict(**all_opts_1)) + list(product_dict(**all_opts_2))
+    print(opts)     
             
 
     # Remark: LTO_LDD is not LTO. Also LTO cannot be given as an option via RUSTFLAGS

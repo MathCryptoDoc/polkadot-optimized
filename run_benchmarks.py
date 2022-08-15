@@ -96,7 +96,7 @@ if __name__=="__main__":
     version = "0.9.26"    
     NB_RUNS = 20
     # For testing:
-    NB_RUNS = 2
+    # NB_RUNS = 2
     run(version, NB_RUNS)
     
     

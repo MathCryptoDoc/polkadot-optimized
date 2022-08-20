@@ -177,7 +177,7 @@ if __name__ == "__main__":
     #             } 
     # opts = list(product_dict(**dict_opts))                                      
     
-    # Only the good builds after analysis - takes about 3 hours to build
+    # Only the good builds after analysis - takes about 4 hours to build
     opts = []
     opts.append({'toolchain': 'stable',  'arch': 'native', 'codegen-units': 1,  'lto': 'fat',  'opt-level': 3}) # build 15
     opts.append({'toolchain': 'stable',  'arch': 'native', 'codegen-units': 16, 'lto': 'fat',  'opt-level': 3}) # build 21

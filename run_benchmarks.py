@@ -38,7 +38,7 @@ def perform_benchmark(binary, NB_RUNS, nb_build, processed_dir, docker=False):
         if not docker:
             bench = subprocess.run([binary, "benchmark", "machine", "--disk-duration", "30"], 
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)                    
-        else:            
+        else:
             #shlex.split("docker run --rm -it parity/polkadot:v0.9.26 benchmark machine --disk-duration 30")
             bench = subprocess.run(['docker', 'run', '--rm', '-it', 'parity/polkadot:v{}'.format(version), 
                                     'benchmark', 'machine', '--disk-duration', '30'], 
@@ -47,6 +47,28 @@ def perform_benchmark(binary, NB_RUNS, nb_build, processed_dir, docker=False):
         pct_after = psutil.cpu_percent(interval=2)
 
         with open(processed_dir + "/bench_{}_run_{}.txt".format(nb_build, i), "w") as text_file:
+            text_file.write("CPU utilization at start: {}\n".format(pct_before))
+            text_file.write(out)
+            text_file.write("CPU utilization at end: {}\n".format(pct_after))
+
+    # TODO test for version >= 0.9.27
+    # TODO number of tests i hard coded (idea: take 1/5 of NB_RUNS)
+    for i in range(4):        
+        print("Performing extrinsic benchmark run {} for polkadot build {}".format(i, nb_build)) 
+
+        pct_before = psutil.cpu_percent(interval=2)
+        if not docker:
+            bench = subprocess.run([binary, 'benchmark', 'extrinsic', '--pallet', 'system', '--extrinsic', 'remark', '--chain', 'polkadot-dev'], 
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)                    
+        else:
+            #shlex.split("docker run --rm -it parity/polkadot:v0.9.26 benchmark machine --disk-duration 30")
+            bench = subprocess.run(['docker', 'run', '--rm', '-it', 'parity/polkadot:v{}'.format(version), 
+                                    'benchmark', 'extrinsic', '--pallet', 'system', '--extrinsic', 'remark', '--chain', 'polkadot-dev'], 
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)                    
+        out = bench.stdout.decode("utf-8")
+        pct_after = psutil.cpu_percent(interval=2)
+
+        with open(processed_dir + "/new_bench_{}_run_{}.txt".format(nb_build, i), "w") as text_file:
             text_file.write("CPU utilization at start: {}\n".format(pct_before))
             text_file.write(out)
             text_file.write("CPU utilization at end: {}\n".format(pct_after))
@@ -87,13 +109,15 @@ def run(version, NB_RUNS = 5):
 
     # Run in Docker    
     perform_benchmark(None, NB_RUNS, "docker", processed_dir, docker=True)
+    # sudo docker run --rm -it parity/polkadot:vVER benchmark machine --disk-duration 30
+
         
 
     
 
 if __name__=="__main__":
     # Change version here
-    version = "0.9.26"    
+    version = "0.9.27"    
     NB_RUNS = 20
     # For testing:
     # NB_RUNS = 2

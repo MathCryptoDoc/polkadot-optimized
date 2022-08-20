@@ -1,7 +1,7 @@
 # polkadot-optimized: optimized binaries for polkadot
 A set of Python scripts to build, benchmark, and analyze different optimization options when compiling [polkadot](https://github.com/paritytech/polkadot) yourself.
 
-See the doc folder on how to use these scripts.
+See the [doc](https://github.com/MathCryptoDoc/polkadot-optimized/tree/main/doc) folder on how to use these scripts.
 
 ## Support us
 

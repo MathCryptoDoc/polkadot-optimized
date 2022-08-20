@@ -168,16 +168,23 @@ def product_dict(**kwargs):
 if __name__ == "__main__":
     version = '0.9.27'
 
-    new_opts = {'toolchain': ['stable', 'nightly'],
-                'arch':      [None, 'alderlake'],
-                'codegen-units':   [1, 16],
-                'lto':       ['off', 'fat', 'thin'],                
-                'opt-level': [2, 3]
-                }                           
-
-    opts = list(product_dict(**new_opts))
-                       
-
+    # # All the options tested for analysis on websise
+    # dict_opts = {'toolchain': ['stable', 'nightly'],
+    #             'arch':      [None, 'alderlake'],  # use native if other arch
+    #             'codegen-units':   [1, 16],
+    #             'lto':       ['off', 'fat', 'thin'],                
+    #             'opt-level': [2, 3]
+    #             } 
+    # opts = list(product_dict(**dict_opts))                                      
+    
+    # Only the good builds after analysis - takes about 3 hours to build
+    opts = []
+    opts.append({'toolchain': 'stable',  'arch': 'native', 'codegen-units': 1,  'lto': 'fat',  'opt-level': 3}) # build 15
+    opts.append({'toolchain': 'stable',  'arch': 'native', 'codegen-units': 16, 'lto': 'fat',  'opt-level': 3}) # build 21
+    opts.append({'toolchain': 'nightly', 'arch': 'native', 'codegen-units': 1,  'lto': 'fat',  'opt-level': 2}) # build 38
+    opts.append({'toolchain': 'nightly', 'arch': 'native', 'codegen-units': 1,  'lto': 'thin', 'opt-level': 2}) # build 40
+    opts.append({'toolchain': 'nightly', 'arch': 'native', 'codegen-units': 16, 'lto': 'fat',  'opt-level': 3}) # build 45
+                        
     print("Number of different builds: {}".format(len(opts)))
     for opt in opts:
         compile(version, opt)    

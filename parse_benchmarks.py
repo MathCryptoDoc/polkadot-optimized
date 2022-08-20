@@ -65,6 +65,21 @@ def get_scores(ascii_table):
         scores.append( convert_to_MiB(score_string) )
     return scores
 
+def get_extrinsic_times(output_text):
+    times = {}
+    times['tot'] = float(re.search('(?<=Total: )(\d+)', output_text).group(0))
+    times['min'] = float(re.search('(?<=Min: )(\d+)', output_text).group(0))
+    times['max'] = float(re.search('(?<=Max: )(\d+)', output_text).group(0))
+    times['avg'] = float(re.search('(?<=Average: )(\d+)', output_text).group(0))
+    times['med'] = float(re.search('(?<=Median: )(\d+)', output_text).group(0))
+    times['std'] = float(re.search('(?<=Stddev: )(\d+)', output_text).group(0))
+    pct_99_95_75 = re.search('(?<=Percentiles 99th, 95th, 75th: )(\d+), (\d+), (\d+)', output_text).group(0).split(",")
+    times['pct99'] = float(pct_99_95_75[0])
+    times['pct95'] = float(pct_99_95_75[1])
+    times['pct75'] = float(pct_99_95_75[2])
+    return times
+
+
 def parse():
     output_dir = Path("output")
     processed_dir = Path("processed")
@@ -85,16 +100,26 @@ def parse():
             nb_build = f.stem.split("_")[1]            
             with open(f, "r") as text_file:
                 build_info[nb_build] = json.load(text_file)['build_options']
-        build_info['official'] = { "toolchain": "nightly", "arch": "none", "codegen": True,
-                                    "lto_ldd": False, "profile": "production" }
-        build_info['docker'] = build_info['official']       
+        # [profile.release]
+        # # Polkadot runtime requires unwinding.
+        # panic = "unwind"
+        # opt-level = 3   
+        # https://doc.rust-lang.org/rustc/codegen-options/index.html#codegen-units
+        # The default value, if not specified, is 16 for non-incremental builds.  
+        # https://doc.rust-lang.org/rustc/codegen-options/index.html#lto
+        # If -C lto is not specified, then the compiler will attempt to perform "thin local LTO" 
+        # which performs "thin" LTO on the local crate only across its codegen units.            
+        build_info['official'] = { "toolchain": "nightly", "arch": "none", "codegen-units": 16,
+                                    "lto": "thin local", "opt-level": 3 }
+        build_info['docker'] = build_info['official']   
                 
         # read the benchmarks
         all_data = []        
         for f in p.glob('bench_*.txt'):               
             nb_build = f.stem.split("_")[1]            
             nb_run = int(f.stem.split("_")[3])            
-            ts = int(os.path.getmtime(f))                        
+            ts = int(os.path.getmtime(f))            
+            # date = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d_%Hh%Mm')
                                     
             with open(f, "r") as text_file:
                 bench = text_file.read()
@@ -122,7 +147,47 @@ def parse():
         df = pd.DataFrame(all_data).reset_index()                  
         df.to_csv(processed_dir / "csv" / "{}_{}_{}.csv".format(version, host, date), index=False)
         df.to_feather(processed_dir / "todo" / "{}_{}_{}.feather".format(version, host, date))        
+        print(df)        
+
+        # read the signing extrinsic
+        all_data = []        
+        for f in p.glob('new_bench_*.txt'):               
+            nb_build = f.stem.split("_")[2]            
+            nb_run = int(f.stem.split("_")[4])            
+            ts = int(os.path.getmtime(f))            
+            # date = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d_%Hh%Mm')
+                                    
+            with open(f, "r") as text_file:
+                bench = text_file.read()
+                times = get_extrinsic_times(bench) 
+
+                if not times: 
+                    # no benchmark table (arch not supported probably)
+                    continue
+                 
+                data = {"host": host, "date": date,                   
+                    "ver": version,
+                    "nb_run": nb_run, "nb_build": nb_build,                      
+                    "cpu": get_cpu_pct(bench)}
+                data.update(times)                            
+                data.update(build_info[nb_build])    
+                
+                if not all_data:
+                    all_data = [data]
+                else:
+                    all_data.append(data)
+
+        # save as dataframe
+        df = pd.DataFrame(all_data).reset_index()                  
+        df.to_csv(processed_dir / "csv" / "extrinsic_{}_{}_{}.csv".format(version, host, date), index=False)
+        df.to_feather(processed_dir / "todo" / "extrinsic_{}_{}_{}.feather".format(version, host, date))        
+        print(df)
+
         shutil.move(p, processed_dir / "old" / version / host / date) 
+        
+        # TODO remove dir if empty with bench
+
+        
 
 if __name__=="__main__":
     parse()

@@ -45,12 +45,7 @@ def run(cmd, work_dir, log_file, env=None):
         if env==None:
             subprocess.run(cmd, shell=True, check=True, universal_newlines=True, stderr=log)
         else:
-            subprocess.run(cmd, shell=True, check=True, universal_newlines=True, stderr=log, env=env)
-        
-
-# def init_logger(log_file):
-#     logging.basicConfig(level=logging.DEBUG)         
-#     logging.getLogger().addHandler(logging.FileHandler(filename=log_file))
+            subprocess.run(cmd, shell=True, check=True, universal_newlines=True, stderr=log, env=env)        
 
 def compile(version, opts):
     print(" === STARTING COMPILATION === ")
@@ -112,23 +107,24 @@ def compile(version, opts):
     # # Start building
     # cargo_build_opts = ' --profile={} --locked --target=x86_64-unknown-linux-gnu'.format(opts['profile'])
 
-    ## NEW CODE AS CUSTOM PROFILE
+    ## NEW CODE AS CUSTOM PROFILE (
+    # It overwrites the production profile -- otherwise still build errors.
     config = tomlkit.loads(Path(work_dir + "/Cargo.toml").read_text())    
     profile = {}
+    # TODO test if arch can be set here
     # if not opts['arch'] == None:
     #     profile['arch'] = opts['arch']    
     profile['inherits'] = 'release'    
     profile['codegen-units'] = opts['codegen-units']    
     profile['lto'] = opts['lto']    
-    profile['opt-level'] = opts['opt-level']  
-    # By default 
-    
+    profile['opt-level'] = opts['opt-level']          
 
     config['profile']['production'] = profile
     with Path(work_dir + "/Cargo.toml").open("w") as fout:
         fout.write(tomlkit.dumps(config))
     
     RUSTFLAGS = ""
+    # TODO test if arch can be set in profile
     if not opts['arch'] == None:
         RUSTFLAGS = RUSTFLAGS + " -C target-cpu={}".format(opts['arch'])
 
@@ -172,15 +168,12 @@ def product_dict(**kwargs):
 if __name__ == "__main__":
     version = '0.9.27'
 
-    
-
     new_opts = {'toolchain': ['stable', 'nightly'],
                 'arch':      [None, 'alderlake'],
                 'codegen-units':   [1, 16],
                 'lto':       ['off', 'fat', 'thin'],                
                 'opt-level': [2, 3]
-                }                 
-          
+                }                           
 
     opts = list(product_dict(**new_opts))
                        

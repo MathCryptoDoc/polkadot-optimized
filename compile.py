@@ -21,10 +21,13 @@ import re
 import glob
 import json
 import logging
+
 import datetime
 import dateutil.relativedelta
 import itertools
 
+import tomlkit
+from pathlib import Path
 
 def extract_largest_number(files):    
     if len(files) == 0:        
@@ -44,6 +47,11 @@ def run(cmd, work_dir, log_file, env=None):
         else:
             subprocess.run(cmd, shell=True, check=True, universal_newlines=True, stderr=log, env=env)
         
+
+# def init_logger(log_file):
+#     logging.basicConfig(level=logging.DEBUG)         
+#     logging.getLogger().addHandler(logging.FileHandler(filename=log_file))
+
 def compile(version, opts):
     print(" === STARTING COMPILATION === ")
     print(opts)
@@ -89,19 +97,43 @@ def compile(version, opts):
 
     run("cargo fetch", work_dir, log_file)
 
-    RUSTFLAGS = "-C opt-level=3"
+    ## OLD CODE WITH RUSTFLAGS
+    # RUSTFLAGS = "-C opt-level=3"
+    # if not opts['arch'] == None:
+    #     RUSTFLAGS = RUSTFLAGS + " -C target-cpu={}".format(opts['arch'])
+    # if opts['codegen']:
+    #     RUSTFLAGS = RUSTFLAGS + " -C codegen-units=1"
+    # if opts['lto_ldd']:
+    #     RUSTFLAGS = RUSTFLAGS + " -C linker-plugin-lto -C linker=clang -C link-arg=-fuse-ld=lld"
+    # # Does not work
+    # #if opts['lto']:
+    # #    RUSTFLAGS = RUSTFLAGS + " -C embed-bitcode -C lto=fat"
+
+    # # Start building
+    # cargo_build_opts = ' --profile={} --locked --target=x86_64-unknown-linux-gnu'.format(opts['profile'])
+
+    ## NEW CODE AS CUSTOM PROFILE
+    config = tomlkit.loads(Path(work_dir + "/Cargo.toml").read_text())    
+    profile = {}
+    # if not opts['arch'] == None:
+    #     profile['arch'] = opts['arch']    
+    profile['inherits'] = 'release'    
+    profile['codegen-units'] = opts['codegen-units']    
+    profile['lto'] = opts['lto']    
+    profile['opt-level'] = opts['opt-level']  
+    # By default 
+    
+
+    config['profile']['production'] = profile
+    with Path(work_dir + "/Cargo.toml").open("w") as fout:
+        fout.write(tomlkit.dumps(config))
+    
+    RUSTFLAGS = ""
     if not opts['arch'] == None:
         RUSTFLAGS = RUSTFLAGS + " -C target-cpu={}".format(opts['arch'])
-    if opts['codegen']:
-        RUSTFLAGS = RUSTFLAGS + " -C codegen-units=1"
-    if opts['lto_ldd']:
-        RUSTFLAGS = RUSTFLAGS + " -C linker-plugin-lto -C linker=clang -C link-arg=-fuse-ld=lld"
-    # Does not work as RUSTFLAGS
-    #if opts['lto']:
-    #    RUSTFLAGS = RUSTFLAGS + " -C embed-bitcode -C lto=fat"
 
     # Start building
-    cargo_build_opts = ' --profile={} --locked --target=x86_64-unknown-linux-gnu'.format(opts['profile'])
+    cargo_build_opts = ' --profile=production --locked --target=x86_64-unknown-linux-gnu'    
         
     if opts['toolchain'] == 'nightly':
         cargo_build_opts = cargo_build_opts + ' -Z unstable-options'    
@@ -117,7 +149,7 @@ def compile(version, opts):
     ## Copy new polkadot file
     os.chdir(os.path.expanduser('~/polkadot-optimized'))
 
-    orig_filename = 'polkadot/target/x86_64-unknown-linux-gnu/{}/polkadot'.format(opts['profile'])
+    orig_filename = 'polkadot/target/x86_64-unknown-linux-gnu/production/polkadot'
     shutil.copy2(orig_filename, new_filename_root + ".bin")
 
     json_dict = {}
@@ -137,78 +169,22 @@ def product_dict(**kwargs):
     for instance in itertools.product(*vals):
         yield dict(zip(keys, instance))
 
-
 if __name__ == "__main__":
-    #############
-    # Select version and build options below
+    version = '0.9.27'
+
     
-    version = '0.9.26'
-    
-    ############# Detailed analysis for i7-12700
-    # # This will take a long time, up to a day!
-    # all_opts_1 = {'toolchain': ['stable', 'nightly'],
-    #             'arch':      [None, 'skylake', 'alderlake'],
-    #             'codegen':   [False, True],s
-    #             'lto_ldd':   [False, True],
-    #             'profile':   ['release']
-    #             }
 
-    # all_opts_2 = {'toolchain': ['stable', 'nightly'],
-    #             'arch':      [None, 'skylake', 'alderlake'],
-    #             'codegen':   [False, True],
-    #             'lto_ldd':   [False],
-    #             'profile':   ['production']
-    #             }
-    # # Take all combinations in all_opts_x    
-    # opts = list(product_dict(**all_opts_1)) + list(product_dict(**all_opts_2))
-    # print(opts)      
+    new_opts = {'toolchain': ['stable', 'nightly'],
+                'arch':      [None, 'alderlake'],
+                'codegen-units':   [1, 16],
+                'lto':       ['off', 'fat', 'thin'],                
+                'opt-level': [2, 3]
+                }                 
+          
 
-    ############# Quick test
-    # # Choose this first to see if the whole pipeline works                      
-    # all_opts = {'toolchain': ['stable', 'nightly'],
-    #             'arch':      [None],
-    #             'codegen':   [False],
-    #             'lto_ldd':   [False],
-    #             'profile':   ['release']
-    #             }
-    # opts = list(product_dict(**all_opts))
-    # print(opts)      
+    opts = list(product_dict(**new_opts))
+                       
 
-    ############# Winning options for native architecture
-    # This will take a few hours.
-    # These correspond to builds 20, 21, 32, 33 from webpage:
-    all_opts_1 = {'toolchain': ['stable', 'nightly'],
-                'arch':      ['native'],
-                'codegen':   [True],
-                'lto_ldd':   [False, True],
-                'profile':   ['release']
-                }
-    # These correspond to builds 39, 45 from webpage:
-    all_opts_2 = {'toolchain': ['stable', 'nightly'],
-                'arch':      ['native'],
-                'codegen':   [True],
-                'lto_ldd':   [False],
-                'profile':   ['production']
-                }
-    # Take all combinations in all_opts_x    
-    opts = list(product_dict(**all_opts_1)) + list(product_dict(**all_opts_2))
-    print(opts)     
-            
-
-    # Remark: LTO_LDD is not LTO. Also LTO cannot be given as an option via RUSTFLAGS
-    # These options give the following errors:
-    # {'toolchain': 'stable', 'arch': None, 'codegen': False, 'lto_ldd': False, 'lto': True, 'profile': 'release'} 
-    #   error: lto can only be run for executables, cdylibs and static library outputs
-    # {'toolchain': 'nightly', 'arch': None, 'codegen': False, 'lto_ldd': False, 'lto': True, 'profile': 'release'}
-    #   error: lto can only be run for executables, cdylibs and static library outputs
-    # https://users.rust-lang.org/t/error-lto-can-only-be-run-for-executables-cdylibs-and-static-library-outputs/73369/3
-    #
-    # However, it is included in Cargo.toml profile
-    #  [profile.production]
-    #  inherits = "release"
-    #  lto = true
-    #  codegen-units = 1    
-                                    
     print("Number of different builds: {}".format(len(opts)))
     for opt in opts:
-        compile(version, opt)        
+        compile(version, opt)    

@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 import matplotlib 
 
 # Nice boxplot with x axis sorted according to median
-def boxplot_sorted(df, by, column, ax):
+def boxplot_sorted(df, by, column, ax, ascending=True):
     boxprops = dict(linewidth=1.5,color='darkblue')
     medianprops = dict(linewidth=2, color='firebrick')
     
     df2 = pd.DataFrame({col:vals[column] for col, vals in df.groupby(by)})
-    meds = df2.median().sort_values()
+    meds = df2.median().sort_values(ascending=ascending)        
     df2[meds.index].boxplot(rot=90, ax=ax, boxprops=boxprops, medianprops=medianprops)
     
     
@@ -24,8 +24,8 @@ def labelled_scatter_plot(df, x_col, y_col, labels_to_plot):
     plt.rcParams["figure.figsize"] = [7.00, 5.50]
     plt.rcParams["figure.autolayout"] = True
     
-    xpoints = df["BLAKE2-256"]
-    ypoints = df["SR25519-Verify"]
+    xpoints = df[x_col]
+    ypoints = df[y_col]
     labels = df.index 
     
     plt.scatter(xpoints, ypoints)

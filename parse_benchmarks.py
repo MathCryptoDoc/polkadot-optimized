@@ -99,7 +99,11 @@ def parse():
         for f in p.glob('bench_*.json'):            
             nb_build = f.stem.split("_")[1]            
             with open(f, "r") as text_file:
-                build_info[nb_build] = json.load(text_file)['build_options']
+                build_info[nb_build] = json.load(text_file)['build_options']  
+                # Booleans are not stored in pyarrow -- ugly translation to string
+                for key, value in build_info[nb_build].items():              
+                    if key=='lto' and value==False:
+                        build_info[nb_build]['lto'] = 'False'
         # [profile.release]
         # # Polkadot runtime requires unwinding.
         # panic = "unwind"
@@ -144,7 +148,7 @@ def parse():
                     all_data.append(data)
 
         # save as dataframe
-        df = pd.DataFrame(all_data).reset_index()                  
+        df = pd.DataFrame(all_data).reset_index()            
         df.to_csv(processed_dir / "csv" / "{}_{}_{}.csv".format(version, host, date), index=False)
         df.to_feather(processed_dir / "todo" / "{}_{}_{}.feather".format(version, host, date))        
         print(df)        
